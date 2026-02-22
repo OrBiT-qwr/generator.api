@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leonardo AI Generator</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 50px; }
+        textarea { width: 400px; height: 100px; margin-bottom: 20px; border-radius: 8px; padding: 10px; }
+        button { padding: 10px 30px; background: #6200ee; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #result { margin-top: 30px; max-width: 512px; }
+        img { width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+
+    <h2>Генератор изображений Leonardo</h2>
+    <textarea id="prompt" placeholder="Опишите ваше изображение..."></textarea>
+    <button onclick="generate()">Создать шедевр</button>
+
+    <div id="result">
+        <p id="status"></p>
+        <img id="outputImage" style="display:none;">
+    </div>
+
+    <script>
+        async function generate() {
+            const prompt = document.getElementById('prompt').value;
+            const status = document.getElementById('status');
+            const img = document.getElementById('outputImage');
+
+            if (!prompt) return alert("Введите промт!");
+
+            status.innerText = "Генерация... (это займет около 20-30 сек)";
+            img.style.display = 'none';
+
+            try {
+                const response = await fetch('http://localhost:5000/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+                
+                const data = await response.json();
+                
+                if (data.image_url) {
+                    img.src = data.image_url;
+                    img.style.display = 'block';
+                    status.innerText = "Готово!";
+                } else {
+                    status.innerText = "Ошибка: " + data.error;
+                }
+            } catch (err) {
+                status.innerText = "Ошибка соединения с сервером.";
+            }
+        }
+    </script>
+</body>
+</html>
